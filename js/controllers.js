@@ -47,40 +47,11 @@ angular.module('starter.controllers', ['starter.services'])
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 })
 
-.controller('HomeCtrl', [
-  '$scope',
-  '$ionicSlideBoxDelegate',
-  '$rootScope', 
-  '$cordovaNetwork',
-  '$cordovaDialogs',
-  '$log',
+.controller('HomeCtrl',
 
-  function($scope,$ionicSlideBoxDelegate,$rootScope, $cordovaNetwork,$cordovaDialogs,$log) {
+  function($scope,$ionicSlideBoxDelegate,$rootScope, $cordovaNetwork,$cordovaDialogs,$log,Content,ContentData) {
   
   
-  //var type = $cordovaNetwork.getNetwork()
-  /*var isOnline = $cordovaNetwork.isOnline();
-  var isOffline = $cordovaNetwork.isOffline();
-  // listen for Offline event
-  $rootScope.$on('$cordovaNetwork:offline', function(event, networkState){
-    var offlineState = networkState;
-    $cordovaDialogs.alert('No cuentas con acceso a datos', 'Ooops!', 'ok')
-    .then(function() {
-      // callback success
-    });
-
-  });
-
-  $rootScope.$on('$cordovaNetwork:online', function(event, networkState){
-    var offlineState = networkState;
-    $cordovaDialogs.alert('Ahora cuentas con acceso a datos', 'Ooops!', 'ok')
-    .then(function() {
-      // callback success
-    });
-
-  });
-
-  */
   document.addEventListener("deviceready", function () {
     var type = $cordovaNetwork.getNetwork();
     
@@ -88,14 +59,24 @@ angular.module('starter.controllers', ['starter.services'])
 
     $rootScope.$on('$cordovaNetwork:offline', function(event, networkState){
       var offlineState = networkState;
-      $cordovaDialogs.alert('No cuentas con acceso a datos, el contenido no se puede cargar', 'Ooops!', 'ok')
+      $cordovaDialogs.alert('No cuentas con acceso a datos, el contenido no se puede cargar', 'Oops!', 'ok')
       .then(function() {
         // callback success
       });
     });
 
-  
-  
+    $scope.contenido = [];
+
+    $rootScope.$on('$cordovaNetwork:online', function(event, networkState){
+      $scope.$on('updateContent',function(e, opt){
+        
+        $scope.contenido = ContentData.get();
+      });
+    });
+
+        
+
+        
   });
 
 
@@ -113,9 +94,9 @@ angular.module('starter.controllers', ['starter.services'])
     { title: 'Rap', id: 5 },
     { title: 'Cowbell', id: 6 }
   ];
-}])
+})
 
-.controller('MenuCtrl',function($scope,$stateParams,$rootScope,$cordovaNetwork,Categories){
+.controller('MenuCtrl',function($scope,$stateParams,$rootScope,$cordovaNetwork,$cordovaSpinnerDialog,Categories,Content, ContentData){
   document.addEventListener("deviceready", function () {
     var type = $cordovaNetwork.getNetwork();
     
@@ -128,6 +109,18 @@ angular.module('starter.controllers', ['starter.services'])
 
 
     });
+
+    $scope.getContentList = function(catid) {
+      //alert(catid);
+      $cordovaSpinnerDialog.show("Cargando","Cargando contenido", true);
+      Content.getList("getContentList/"+ catid,function(data){
+        ContentData.set(data);
+        $scope.contenido = ContentData.get();
+        $rootScope.$broadcast('updateContent',{mensaje:"wazaa"});
+        $cordovaSpinnerDialog.hide();
+      });
+      
+    }
 
   });
 
